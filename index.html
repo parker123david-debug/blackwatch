@@ -13,20 +13,12 @@
             overflow: hidden;
             font-family: 'Georgia', serif;
             color: white;
-            background: #000;
-        }
-
-        #snow-canvas {
-            position: fixed;
-            inset: 0;
-            pointer-events: none;      /* не заважає клікам */
-            z-index: 0;
         }
 
         .bg {
             position: fixed;
             inset: 0;
-            background: url('back.png') center center / cover no-repeat;
+            background: url('back.png') center center / cover no-repeat !important;
             z-index: -1;
         }
 
@@ -101,7 +93,6 @@
     </style>
 </head>
 <body>
-    <canvas id="snow-canvas"></canvas>
     <div class="bg"></div>
 
     <div class="container">
@@ -120,17 +111,14 @@
         </div>
     </div>
 
-    <!-- Аудіо з muted для автоплею -->
-    <audio id="ambience" loop muted volume="0.35">
+    <audio id="ambience" loop volume="0.35">
         <source src="wind.mp3" type="audio/mpeg">
     </audio>
-    <audio id="theme" loop muted volume="0.20">
+    <audio id="theme" loop volume="0.20">
         <source src="title.mp3" type="audio/mpeg">
     </audio>
 
     <script>
-        // ────────────────────────────────────────────────
-        // Таймер
         function updateTimer() {
             const now = new Date();
             let target = new Date();
@@ -150,103 +138,23 @@
         setInterval(updateTimer, 1000);
         updateTimer();
 
-        // ────────────────────────────────────────────────
-        // Автоплей + розблокування звуку після першого кліку
         const ambience = document.getElementById('ambience');
         const theme    = document.getElementById('theme');
         const btn      = document.getElementById('sound-toggle');
+        let isPlaying = false;
 
-        // намагаємося автоплей з muted
-        ambience.play().catch(() => console.log("Автоплей заблоковано (muted)"));
-        theme.play().catch(() => console.log("Автоплей заблоковано (muted)"));
-
-        // після будь-якого кліку розблокуємо звук повністю
-        let unlocked = false;
-        document.addEventListener('click', function unlockAudio() {
-            if (!unlocked) {
-                ambience.muted = false;
-                theme.muted = false;
-                unlocked = true;
-                // можна навіть трохи збільшити гучність після розблокування
-                // ambience.volume = 0.45;
-                // theme.volume = 0.30;
-            }
-        }, { once: true });  // тільки перший клік
-
-        // кнопка все одно працює (toggle)
-        let isPlaying = true;  // бо автоплей
         btn.addEventListener('click', () => {
-            if (isPlaying) {
+            if (!isPlaying) {
+                ambience.play().catch(e => console.log("Помилка play", e));
+                theme.play().catch(e => console.log("Помилка play", e));
+                btn.textContent = "Вимкнути звук Стіни";
+            } else {
                 ambience.pause();
                 theme.pause();
                 btn.textContent = "Увімкнути звук Стіни";
-            } else {
-                ambience.play();
-                theme.play();
-                btn.textContent = "Вимкнути звук Стіни";
             }
             isPlaying = !isPlaying;
         });
-
-        // ────────────────────────────────────────────────
-        // Простий снігопад на canvas
-        const canvas = document.getElementById('snow-canvas');
-        const ctx = canvas.getContext('2d');
-
-        let flakes = [];
-        const flakeCount = 120;  // кількість сніжинок (можна зменшити до 60-80 для слабких пристроїв)
-
-        function resizeCanvas() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-        }
-        window.addEventListener('resize', resizeCanvas);
-        resizeCanvas();
-
-        // створюємо сніжинки
-        for (let i = 0; i < flakeCount; i++) {
-            flakes.push({
-                x: Math.random() * canvas.width,
-                y: Math.random() * canvas.height,
-                radius: Math.random() * 3 + 1,
-                speed: Math.random() * 1.5 + 0.5,
-                drift: Math.random() * 0.8 - 0.4   // легкий бічний рух
-            });
-        }
-
-        function drawSnow() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = "rgba(255,255,255,0.9)";
-            ctx.shadowBlur = 5;
-            ctx.shadowColor = "rgba(255,255,255,0.6)";
-
-            flakes.forEach(flake => {
-                ctx.beginPath();
-                ctx.arc(flake.x, flake.y, flake.radius, 0, Math.PI * 2);
-                ctx.fill();
-
-                flake.y += flake.speed;
-                flake.x += flake.drift;
-
-                // легкий коливання
-                flake.drift += (Math.random() - 0.5) * 0.05;
-                flake.drift = Math.max(-0.8, Math.min(0.8, flake.drift));
-
-                // якщо впала вниз — повертаємо наверх
-                if (flake.y > canvas.height) {
-                    flake.y = -10;
-                    flake.x = Math.random() * canvas.width;
-                }
-
-                // якщо вийшла за край по горизонталі
-                if (flake.x > canvas.width) flake.x = 0;
-                if (flake.x < 0) flake.x = canvas.width;
-            });
-
-            requestAnimationFrame(drawSnow);
-        }
-
-        drawSnow();
     </script>
 </body>
 </html>
