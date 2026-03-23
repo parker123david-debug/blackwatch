@@ -5,124 +5,90 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ВАРТА НА СТІНІ</title>
 
-    <!-- Шрифт Game of Thrones через CDN -->
+    <!-- Шрифт Game of Thrones -->
     <link href="https://db.onlinewebfonts.com/c/97c4b25dc74e0ab045154e75a8fdd69d?family=Game+of+Thrones" rel="stylesheet">
 
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin:0; padding:0; box-sizing:border-box; }
         html, body {
-            height: 100%;
-            width: 100%;
-            overflow: hidden;
-            font-family: 'Georgia', serif;
-            color: white;
-            background: #0a0a0a; /* дуже темний фон на випадок проблем із зображенням */
+            height:100%;
+            width:100%;
+            overflow:hidden;
+            font-family:'Georgia',serif;
+            color:white;
+            background:#000; /* чорний тільки якщо зображення не завантажиться */
         }
-
-        /* Фоновий шар */
         .bg {
-            position: fixed;
-            inset: 0;
-            z-index: -1;
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            transition: opacity 0.8s ease-in;
-            opacity: 0;
+            position:fixed;
+            inset:0;
+            background:url('back.png') center center / cover no-repeat !important;
+            z-index:-1;
         }
-        .bg.loaded {
-            opacity: 1;
-        }
-
         .container {
-            position: relative;
-            z-index: 1;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            align-items: center;
-            text-align: center;
-            padding: 3vh 4vw;
+            position:relative;
+            z-index:1;
+            height:100vh;
+            display:flex;
+            flex-direction:column;
+            justify-content:space-between;
+            align-items:center;
+            text-align:center;
+            padding:3vh 5vw;
         }
-
         .header {
-            color: #d4af37;
-            font-family: 'Game of Thrones', Georgia, serif;
-            font-size: clamp(2.4rem, 7vw, 4.8rem);
-            font-style: italic;
-            text-shadow: 4px 4px 12px #000;
-            margin-top: 2vh;
-            line-height: 1.1;
-            max-width: 94vw;
+            color:#d4af37;
+            font-family:'Game of Thrones',Georgia,serif;
+            font-size:clamp(2.2rem,6vw,4.5rem);
+            font-style:italic;
+            text-shadow:3px 3px 12px #000;
+            margin-top:2vh;
+            max-width:92vw;
+            line-height:1.1;
         }
-
         .oath {
-            color: #e8e8e8;
-            font-family: 'Game of Thrones', Georgia, serif;
-            font-size: clamp(1.9rem, 6vw, 4.2rem);
-            font-weight: bold;
-            line-height: 1.28;
-            text-shadow: 3px 3px 10px #000;
-            max-width: 90vw;
+            color:#e0e0e0;
+            font-family:'Game of Thrones',Georgia,serif;
+            font-size:clamp(1.7rem,5vw,3.8rem);
+            line-height:1.3;
+            text-shadow:2px 2px 10px #000;
+            max-width:88vw;
         }
-
         .bottom-block {
-            margin-bottom: 5vh;
-            width: 100%;
+            margin-bottom:6vh;
+            width:100%;
         }
-
         .label {
-            font-size: clamp(1.5rem, 4.5vw, 2.9rem);
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 5px;
-            margin-bottom: 6px;
-            opacity: 0.94;
+            font-size:clamp(1.3rem,4vw,2.6rem);
+            font-weight:bold;
+            text-transform:uppercase;
+            letter-spacing:4px;
+            margin-bottom:6px;
+            opacity:0.95;
         }
-
         .timer {
-            font-family: 'Times New Roman', serif;
-            font-size: clamp(4.5rem, 17vw, 12rem);
-            font-weight: bold;
-            color: #a5f2f3;
-            text-shadow: 0 0 45px rgba(165, 242, 243, 0.7);
-            line-height: 0.92;
+            font-family:'Times New Roman',serif;
+            font-size:clamp(4rem,15vw,11rem);
+            font-weight:bold;
+            color:#a5f2f3;
+            text-shadow:0 0 40px rgba(165,242,243,0.7);
+            line-height:0.9;
         }
 
-        /* Адаптація розмірів для великих екранів */
-        @media (min-width: 1200px) {
-            .header  { font-size: clamp(2.6rem, 3.8vw, 4.4rem); }
-            .oath    { font-size: clamp(2rem, 3.2vw, 3.8rem); }
-            .timer   { font-size: clamp(6rem, 9vw, 10.5rem); }
-            .label   { font-size: clamp(1.6rem, 2.2vw, 2.6rem); }
+        /* Менше на великих екранах */
+        @media (min-width:1200px) {
+            .header  { font-size:clamp(2.4rem,3.5vw,4rem); }
+            .oath    { font-size:clamp(1.8rem,2.8vw,3.4rem); }
+            .timer   { font-size:clamp(5rem,8vw,9rem); }
         }
 
-        @media (min-width: 1800px) {
-            .timer   { font-size: clamp(7rem, 7vw, 9.5rem); }
-        }
-
-        @media (max-width: 600px) {
-            .container { padding: 2vh 5vw; }
-            .timer     { font-size: clamp(4rem, 22vw, 8.5rem); }
-            .header    { margin-top: 4vh; }
+        @media (max-width:500px) {
+            .timer   { font-size:clamp(3.5rem,20vw,7.5rem); }
+            .container { padding:2vh 6vw; }
         }
     </style>
 </head>
 <body>
-
-    <!-- Фон з вибором зображення залежно від екрану -->
-    <picture id="bg">
-        <!-- Для екранів ширше 900px — використовуємо backg.png (твій варіант для комп'ютерів) -->
-        <source media="(min-width: 901px)" srcset="backg.png">
-        <!-- Для всіх інших (телефони, планшети, малі вікна) — back.png -->
-        <img class="bg" src="back.png" alt="Фон варти" loading="eager">
-    </picture>
-
+    <div class="bg"></div>
     <div class="container">
         <div class="header">НІЧ ПОЧИНАЄТЬСЯ, І ПОЧИНАЄТЬСЯ МОЯ ВАРТА...</div>
         <div class="oath">
@@ -144,61 +110,44 @@
     </audio>
 
     <script>
-        // Таймер до 08:00 наступного дня
+        // Таймер
         function updateTimer() {
             const now = new Date();
             let target = new Date();
-            target.setHours(8, 0, 0, 0);
-            if (now >= target) target.setDate(target.getDate() + 1);
+            target.setHours(8,0,0,0);
+            if (now >= target) target.setDate(target.getDate()+1);
             const diff = target - now;
             const h = Math.floor(diff / 3600000);
-            const m = Math.floor((diff % 3600000) / 60000);
-            const s = Math.floor((diff % 60000) / 1000);
-            document.getElementById('countdown').innerText =
+            const m = Math.floor((diff % 3600000)/60000);
+            const s = Math.floor((diff % 60000)/1000);
+            document.getElementById('countdown').innerText = 
                 `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
         }
-        setInterval(updateTimer, 1000);
+        setInterval(updateTimer,1000);
         updateTimer();
 
-        // Плавне показування фону
-        const bg = document.querySelector('.bg');
-        const bgImg = new Image();
-        bgImg.src = bg.currentSrc || bg.src;
-        bgImg.onload = () => bg.classList.add('loaded');
-        if (bgImg.complete) bg.classList.add('loaded');
-
-        // Аудіо — розблокування після будь-якої взаємодії
+        // Аудіо — розблокування після взаємодії
         const ambience = document.getElementById('ambience');
         const theme = document.getElementById('theme');
+        let unlocked = false;
 
-        let audioUnlocked = false;
-
-        function unlockAudio() {
-            if (audioUnlocked) return;
-            audioUnlocked = true;
-
+        function unlock() {
+            if (unlocked) return;
+            unlocked = true;
             ambience.muted = false;
             theme.muted = false;
-
-            const playPromises = [
-                ambience.play().catch(() => {}),
-                theme.play().catch(() => {})
-            ];
-
-            Promise.allSettled(playPromises);
+            ambience.play().catch(()=>{});
+            theme.play().catch(()=>{});
         }
 
-        // Більш широкий набір подій для розблокування звуку
-        const events = ['click', 'touchstart', 'keydown', 'mousemove', 'scroll', 'pointerdown'];
-        events.forEach(ev => {
-            document.addEventListener(ev, unlockAudio, { once: true, passive: true });
+        ['click','touchstart','keydown','mousemove','scroll'].forEach(e=>{
+            document.addEventListener(e, unlock, {once:true, passive:true});
         });
 
-        // Спроба автоплей з muted (працює майже завжди)
-        ambience.muted = true;
-        theme.muted = true;
-        ambience.play().catch(() => {});
-        theme.play().catch(() => {});
+        // Початкова спроба muted
+        ambience.muted = true; theme.muted = true;
+        ambience.play().catch(()=>{});
+        theme.play().catch(()=>{});
     </script>
 </body>
 </html>
