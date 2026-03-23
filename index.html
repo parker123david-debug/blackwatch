@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ВАРТА НА СТІНІ</title>
 
-    <!-- Шрифт Game of Thrones через CDN (без встановлення) -->
+    <!-- Шрифт Game of Thrones через CDN -->
     <link href="https://db.onlinewebfonts.com/c/97c4b25dc74e0ab045154e75a8fdd69d?family=Game+of+Thrones" rel="stylesheet">
 
     <style>
@@ -17,12 +17,19 @@
             overflow: hidden;
             font-family: 'Georgia', serif;
             color: white;
+            /* НЕ ставимо background: black; — нехай фоновий div робить всю роботу */
         }
         .bg {
             position: fixed;
             inset: 0;
             background: url('back.png') center center / cover no-repeat !important;
             z-index: -1;
+            /* Додаємо плавне завантаження */
+            opacity: 0;
+            transition: opacity 1.2s ease-in;
+        }
+        .bg.loaded {
+            opacity: 1;
         }
         .container {
             position: relative;
@@ -34,6 +41,8 @@
             align-items: center;
             text-align: center;
             padding: 20px 0;
+            /* Якщо фон не завантажився — робимо темний напівпрозорий шар */
+            background: rgba(0,0,0,0.4); /* легкий затемнювач як запасний варіант */
         }
         .header {
             color: #d4af37;
@@ -69,7 +78,7 @@
         }
         .timer {
             font-family: 'Times New Roman', serif;
-            font-size: clamp(5rem, 18vw, 14rem); /* обмежив максимум, щоб не було надто великим на 4K */
+            font-size: clamp(5rem, 18vw, 14rem);
             font-weight: bold;
             color: #a5f2f3;
             text-shadow: 0 0 40px rgba(165, 242, 243, 0.6);
@@ -87,11 +96,12 @@
         @media (max-width: 480px) {
             .timer   { font-size: clamp(3.5rem, 20vw, 8rem); }
             .header  { margin-top: 5vh; }
+            .container { padding: 10px 0; }
         }
     </style>
 </head>
 <body>
-    <div class="bg"></div>
+    <div class="bg" id="bg"></div>
     <div class="container">
         <div class="header">НІЧ ПОЧИНАЄТЬСЯ, І ПОЧИНАЄТЬСЯ МОЯ ВАРТА...</div>
         <div class="oath">
@@ -130,6 +140,18 @@
         }
         setInterval(updateTimer, 1000);
         updateTimer();
+
+        // Плавне показування фону після завантаження
+        const bg = document.getElementById('bg');
+        const bgImg = new Image();
+        bgImg.src = 'back.png';
+        bgImg.onload = function() {
+            bg.classList.add('loaded');
+        };
+        // Якщо зображення вже в кеші — показуємо відразу
+        if (bgImg.complete) {
+            bg.classList.add('loaded');
+        }
 
         // Аудіо логіка
         const ambience = document.getElementById('ambience');
