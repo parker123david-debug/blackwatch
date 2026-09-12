@@ -3,122 +3,308 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ВАРТА НА СТІНІ</title>
+    <title>ВАРТА НА СТІНІ — Night's Watch</title>
 
-    <!-- Cinzel — стабільний аналог шрифту GoT -->
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&display=swap" rel="stylesheet">
+    <!-- Google Fonts: Cinzel for epic GoT lettering -->
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;900&family=Cinzel+Decorative:wght@700&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS for modern responsive utility classes -->
+    <script src="https://cdn.tailwindcss.com"></script>
 
     <style>
-        html, body {
-            margin: 0;
-            padding: 0;
-            height: 100%;
-            width: 100%;
-            overflow: hidden;
-            font-family: 'Cinzel', Georgia, serif;
-            color: white;
+        :root {
+            --glow-cyan: #a5f2f3;
+            --deep-ice: #0b1329;
+            --gold-accent: #d4af37;
         }
-        .bg {
+
+        body {
+            font-family: 'Cinzel', Georgia, serif;
+            background-color: #030712;
+            color: #f3f4f6;
+            overflow-x: hidden;
+            user-select: none;
+        }
+
+        /* Cinematic Background Vignette & Ice Gradient */
+        .cinematic-bg {
             position: fixed;
             inset: 0;
-            background: url('back.png') center center / cover no-repeat !important;
+            background: 
+                radial-gradient(circle at 50% 30%, rgba(11, 31, 64, 0.6) 0%, rgba(3, 7, 18, 0.95) 80%),
+                linear-gradient(to bottom, rgba(0,0,0,0.8), rgba(2, 6, 23, 0.95)),
+                url('https://images.unsplash.com/photo-1517299321609-52687d1bc55a?q=80&w=1920&auto=format&fit=crop') center/cover no-repeat;
+            z-index: -2;
+            filter: brightness(0.65) contrast(1.15);
+        }
+
+        /* Frost overlay */
+        .frost-overlay {
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(circle, transparent 40%, rgba(165, 242, 243, 0.04) 90%),
+                        radial-gradient(ellipse at top, rgba(165, 242, 243, 0.08) 0%, transparent 70%);
+            pointer-events: none;
             z-index: -1;
         }
-        .container {
-            position: relative;
-            z-index: 1;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            align-items: center;
-            text-align: center;
-            padding: 20px 0;
+
+        /* Canvas for dynamic snow storm */
+        #snowCanvas {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
         }
-        .header {
-            color: #d4af37;
-            font-size: clamp(2.2rem, 6vw, 4.5rem);
-            font-weight: 900;
-            text-shadow: 3px 3px 10px black;
-            margin-top: 3vh;
+
+        /* Glowing Frost Text Effect */
+        .frost-text {
+            color: #ffffff;
+            text-shadow: 
+                0 0 10px rgba(165, 242, 243, 0.6),
+                0 0 20px rgba(165, 242, 243, 0.4),
+                0 0 40px rgba(165, 242, 243, 0.2),
+                2px 2px 4px rgba(0, 0, 0, 0.9);
         }
-        .oath {
-            color: #e0e0e0;
-            font-size: clamp(1.8rem, 5.5vw, 4rem);
-            line-height: 1.25;
-            text-shadow: 2px 2px 12px black;
+
+        .gold-text {
+            color: var(--gold-accent);
+            text-shadow: 
+                0 0 12px rgba(212, 175, 55, 0.5),
+                2px 2px 6px rgba(0, 0, 0, 0.9);
         }
-        .bottom-block {
-            margin-bottom: 4vh;
-            width: 100%;
+
+        /* Timer Glow */
+        .timer-glow {
+            color: #d1fdff;
+            text-shadow: 
+                0 0 15px rgba(165, 242, 243, 0.8),
+                0 0 35px rgba(165, 242, 243, 0.5),
+                0 0 60px rgba(13, 148, 136, 0.4),
+                3px 3px 8px rgba(0, 0, 0, 0.95);
+            font-variant-numeric: tabular-nums;
         }
-        .label {
-            font-size: clamp(1.4rem, 4vw, 2.8rem);
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 4px;
-            margin-bottom: 8px;
+
+        /* Pulse animation for sound banner */
+        @keyframes subtlePulse {
+            0%, 100% { opacity: 0.85; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.02); }
         }
-        .timer {
-            font-size: clamp(5rem, 16vw, 11rem);
-            color: #a5f2f3;
-            text-shadow: 0 0 40px rgba(165, 242, 243, 0.6);
-            line-height: 0.9;
+        .pulse-banner {
+            animation: subtlePulse 3s ease-in-out infinite;
+        }
+
+        /* Custom scrollbar & glassmorphism */
+        .glass-panel {
+            background: rgba(11, 19, 41, 0.65);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(165, 242, 243, 0.15);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(165, 242, 243, 0.2);
         }
     </style>
 </head>
-<body>
-    <div class="bg"></div>
-    <div class="container">
-        <div class="header">НІЧ ПОЧИНАЄТЬСЯ, І ПОЧИНАЄТЬСЯ МОЯ ВАРТА...</div>
-        <div class="oath">
-            Я — меч у темряві.<br>
-            Я — вартовий на Стіні.
-        </div>
-        <div class="bottom-block">
-            <div class="label">ДО КІНЦЯ ВАРТИ</div>
-            <div id="countdown" class="timer">00:00:00</div>
+<body class="min-h-screen flex flex-col justify-between items-center relative overflow-x-hidden selection:bg-cyan-900 selection:text-cyan-200">
+
+    <div class="cinematic-bg"></div>
+    <div class="frost-overlay"></div>
+    <canvas id="snowCanvas"></canvas>
+
+    <!-- Audio Prompt Banner (Interactive Unlock) -->
+    <div id="audioBanner" class="fixed top-4 z-50 transition-all duration-700 px-4 w-full flex justify-center">
+        <div class="glass-panel pulse-banner px-6 py-3 rounded-full flex items-center space-x-3 text-cyan-200 border border-cyan-500/30 shadow-2xl cursor-pointer hover:bg-cyan-950/80 transition" onclick="unlockAudio()">
+            <svg class="w-6 h-6 text-cyan-400 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"></path>
+            </svg>
+            <span class="text-xs sm:text-sm font-semibold tracking-wider uppercase">Торкніться екрана, щоб увімкнути вітер та подих Стіни</span>
         </div>
     </div>
 
-    <audio id="ambience" loop muted volume="0.35">
+    <!-- Main Container -->
+    <div class="relative z-10 w-full max-w-5xl mx-auto min-h-screen flex flex-col justify-between items-center px-4 sm:px-8 py-6 sm:py-10 text-center">
+        
+        <!-- Header / Epic Quote -->
+        <header class="w-full mt-12 sm:mt-8 space-y-3">
+            <div class="inline-block px-4 py-1 rounded-full border border-amber-500/30 bg-amber-950/30 text-amber-300 text-xs sm:text-sm font-bold tracking-[0.25em] uppercase mb-1 shadow-inner gold-text">
+                Нічна Варта • Night's Watch
+            </div>
+            <h1 class="gold-text text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-black tracking-wider uppercase leading-tight px-2">
+                Ніч починається, і починається моя варта...
+            </h1>
+        </header>
+
+        <!-- Central Oath Block -->
+        <main class="my-auto py-6 w-full max-w-3xl">
+            <div class="glass-panel rounded-2xl p-6 sm:p-10 relative overflow-hidden group">
+                <!-- Decorative corner rune borders -->
+                <div class="absolute top-2 left-2 w-4 h-4 border-t-2 border-l-2 border-cyan-400/50"></div>
+                <div class="absolute top-2 right-2 w-4 h-4 border-t-2 border-r-2 border-cyan-400/50"></div>
+                <div class="absolute bottom-2 left-2 w-4 h-4 border-b-2 border-l-2 border-cyan-400/50"></div>
+                <div class="absolute bottom-2 right-2 w-4 h-4 border-b-2 border-r-2 border-cyan-400/50"></div>
+
+                <p class="frost-text text-xl sm:text-3xl md:text-4xl font-semibold leading-relaxed tracking-wide italic">
+                    « Я — меч у темряві.<br>
+                    Я — вартовий на Стіні. »
+                </p>
+                <div class="mt-4 text-xs sm:text-sm tracking-[0.3em] text-cyan-300/70 uppercase">
+                    — Клятва Брата Нічної Варти
+                </div>
+            </div>
+        </main>
+
+        <!-- Bottom Timer Block -->
+        <footer class="w-full mb-4 sm:mb-6">
+            <div class="glass-panel inline-block px-6 sm:px-12 py-5 sm:py-7 rounded-3xl border border-cyan-500/30 shadow-2xl backdrop-blur-xl">
+                <div class="text-xs sm:text-base md:text-lg font-bold uppercase tracking-[0.35em] text-cyan-300/90 mb-2 flex items-center justify-center space-x-2">
+                    <span class="inline-block w-2 h-2 rounded-full bg-cyan-400 animate-ping"></span>
+                    <span>ДО КІНЦЯ ВАРТИ (08:00)</span>
+                </div>
+                <div id="countdown" class="timer-glow text-4xl sm:text-7xl md:text-8xl lg:text-9xl font-black tracking-wider">
+                    00:00:00
+                </div>
+            </div>
+            
+            <!-- Sub-footer info / status -->
+            <div class="mt-4 text-[11px] sm:text-xs text-gray-400 tracking-wider flex justify-center items-center space-x-4">
+                <span>Холод міцнішає</span>
+                <span>•</span>
+                <span>Зима близько</span>
+                <span>•</span>
+                <span id="audioStatusText" class="text-cyan-400">Аудіо: Очікування дотику</span>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Audio Elements (Using safe ambient synthesis & fallback audio) -->
+    <audio id="ambience" loop preload="auto">
+        <source src="https://actions.google.com/sounds/v1/weather/wind_heavy_gusts.ogg" type="audio/ogg">
         <source src="wind.mp3" type="audio/mpeg">
     </audio>
-    <audio id="theme" loop muted volume="0.20">
+    <audio id="theme" loop preload="auto">
+        <source src="https://actions.google.com/sounds/v1/ambiences/night_crickets_and_wind.ogg" type="audio/ogg">
         <source src="title.mp3" type="audio/mpeg">
     </audio>
 
     <script>
+        const canvas = document.getElementById('snowCanvas');
+        const ctx = canvas.getContext('2d');
+
+        let width = canvas.width = window.innerWidth;
+        let height = canvas.height = window.innerHeight;
+
+        window.addEventListener('resize', () => {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        });
+
+        // Snowflakes particle array
+        const snowflakes = [];
+        const maxSnowflakes = window.innerWidth < 768 ? 70 : 160;
+
+        for (let i = 0; i < maxSnowflakes; i++) {
+            snowflakes.push({
+                x: Math.random() * width,
+                y: Math.random() * height,
+                radius: Math.random() * 2.5 + 0.8,
+                density: Math.random() * maxSnowflakes,
+                speedY: Math.random() * 1.2 + 0.5,
+                speedX: Math.random() * 0.8 - 0.4,
+                opacity: Math.random() * 0.7 + 0.3
+            });
+        }
+
+        function drawSnow() {
+            ctx.clearRect(0, 0, width, height);
+            ctx.fillStyle = "rgba(255, 255, 255, 0.85)";
+            ctx.beginPath();
+            
+            for (let i = 0; i < snowflakes.length; i++) {
+                let sf = snowflakes[i];
+                ctx.fillStyle = `rgba(165, 242, 243, ${sf.opacity})`;
+                ctx.beginPath();
+                ctx.arc(sf.x, sf.y, sf.radius, 0, Math.PI * 2, true);
+                ctx.fill();
+
+                // Update coordinates with subtle wind drift
+                sf.y += sf.speedY;
+                sf.x += Math.sin(sf.y / 40 + sf.density) * 0.5 + sf.speedX;
+
+                // Recycle flakes when they go off screen
+                if (sf.y > height + 10) {
+                    sf.y = -10;
+                    sf.x = Math.random() * width;
+                }
+                if (sf.x > width + 10) {
+                    sf.x = 0;
+                } else if (sf.x < -10) {
+                    sf.x = width;
+                }
+            }
+            requestAnimationFrame(drawSnow);
+        }
+        drawSnow();
+
         function updateTimer() {
             const now = new Date();
             let target = new Date();
             target.setHours(8, 0, 0, 0);
-            if (now >= target) target.setDate(target.getDate() + 1);
+            
+            // If current time is past 08:00 AM today, target is 08:00 AM tomorrow
+            if (now >= target) {
+                target.setDate(target.getDate() + 1);
+            }
+            
             const diff = target - now;
             const h = Math.floor(diff / 3600000);
             const m = Math.floor((diff % 3600000) / 60000);
             const s = Math.floor((diff % 60000) / 1000);
-            document.getElementById('countdown').innerText =
-                (h < 10 ? "0" + h : h) + ":" +
-                (m < 10 ? "0" + m : m) + ":" +
-                (s < 10 ? "0" + s : s);
+
+            const format = (val) => (val < 10 ? "0" + val : val);
+            document.getElementById('countdown').innerText = 
+                format(h) + ":" + format(m) + ":" + format(s);
         }
+
         setInterval(updateTimer, 1000);
         updateTimer();
 
         const ambience = document.getElementById('ambience');
         const theme = document.getElementById('theme');
+        const audioBanner = document.getElementById('audioBanner');
+        const audioStatusText = document.getElementById('audioStatusText');
 
-        let unlocked = false;
+        let audioUnlocked = false;
+
         function unlockAudio() {
-            if (unlocked) return;
-            unlocked = true;
-            ambience.muted = false;
-            theme.muted = false;
-            ambience.play().catch(() => {});
-            theme.play().catch(() => {});
+            if (audioUnlocked) return;
+            audioUnlocked = true;
+
+            ambience.volume = 0.45;
+            theme.volume = 0.25;
+
+            const playPromise1 = ambience.play();
+            const playPromise2 = theme.play();
+
+            if (playPromise1 !== undefined) {
+                playPromise1.then(() => {
+                    audioStatusText.innerText = "Аудіо: Активно (Вітер Стіни)";
+                }).catch(err => {
+                    console.log("Audio autoplay prevented or error:", err);
+                });
+            }
+
+            if (playPromise2 !== undefined) {
+                playPromise2.catch(err => {
+                    console.log("Secondary audio playback restricted:", err);
+                });
+            }
+
+            // Smoothly hide the banner
+            audioBanner.style.opacity = '0';
+            setTimeout(() => {
+                audioBanner.style.display = 'none';
+            }, 700);
         }
 
+        // Global listeners for first interaction
         document.addEventListener('click', unlockAudio, { once: true });
         document.addEventListener('touchstart', unlockAudio, { once: true });
     </script>
