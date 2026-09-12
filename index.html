@@ -1,1 +1,588 @@
+<!DOCTYPE html>
+<html lang="uk" data-theme="night">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Варта на Стіні — Game of Thrones Watch</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800;900&family=Cormorant+Garamond:ital,wght@0,500;0,700;1,400&display=swap" rel="stylesheet">
 
+    <style>
+        :root {
+            --bg-gradient: radial-gradient(circle at center, #0d131d 0%, #040609 100%);
+            --card-bg: rgba(10, 16, 26, 0.75);
+            --card-border: rgba(142, 179, 211, 0.3);
+            --text-primary: #e2f1f8;
+            --text-accent: #70b5f9;
+            --gold-glow: #e0a96d;
+            --ice-glow: #00d2ff;
+            --wall-stone: #1a222d;
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+        }
+
+        [data-theme="day"] {
+            --bg-gradient: radial-gradient(circle at center, #243348 0%, #0e1520 100%);
+            --card-bg: rgba(22, 33, 49, 0.85);
+            --card-border: rgba(180, 210, 235, 0.4);
+            --text-primary: #f0f6fc;
+            --text-accent: #ffd166;
+            --ice-glow: #a8dadc;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+        }
+
+        body {
+            font-family: 'Cormorant Garamond', serif;
+            background: var(--bg-gradient);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            overflow-x: hidden;
+            position: relative;
+            padding: 20px 15px;
+            transition: background 1s ease;
+        }
+
+        /* Canvas зі снігом */
+        #snowCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* Основний контейнер */
+        .container {
+            position: relative;
+            z-index: 2;
+            width: 100%;
+            max-width: 1000px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 25px;
+        }
+
+        /* Шапка */
+        header {
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        h1 {
+            font-family: 'Cinzel', serif;
+            font-size: clamp(2rem, 5vw, 3.8rem);
+            font-weight: 900;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            color: #ffffff;
+            text-shadow: 0 0 15px var(--ice-glow), 0 0 30px rgba(0, 210, 255, 0.4);
+            margin-bottom: 5px;
+        }
+
+        .subtitle {
+            font-size: clamp(1rem, 2.5vw, 1.3rem);
+            font-style: italic;
+            color: #a0b2c6;
+            letter-spacing: 1px;
+        }
+
+        /* Елементи керування */
+        .controls {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 10px;
+        }
+
+        .btn {
+            background: rgba(15, 23, 36, 0.8);
+            border: 1px solid var(--card-border);
+            color: var(--text-primary);
+            font-family: 'Cinzel', serif;
+            font-size: 0.85rem;
+            padding: 10px 20px;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+            position: relative;
+            overflow: hidden;
+            border-radius: 2px;
+        }
+
+        .btn:hover {
+            border-color: var(--text-accent);
+            box-shadow: 0 0 15px var(--ice-glow);
+            color: #ffffff;
+            transform: translateY(-2px);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        /* Головне табло статусу */
+        .status-banner {
+            width: 100%;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-left: 4px solid var(--text-accent);
+            border-right: 4px solid var(--text-accent);
+            padding: 15px 20px;
+            text-align: center;
+            backdrop-filter: blur(8px);
+            box-shadow: var(--shadow);
+        }
+
+        .status-title {
+            font-family: 'Cinzel', serif;
+            font-size: 0.9rem;
+            letter-spacing: 2px;
+            color: #88a0b8;
+            margin-bottom: 5px;
+        }
+
+        .current-watch-name {
+            font-family: 'Cinzel', serif;
+            font-size: clamp(1.4rem, 3.5vw, 2.2rem);
+            font-weight: 800;
+            color: var(--text-accent);
+            text-shadow: 0 0 10px var(--ice-glow);
+            text-transform: uppercase;
+        }
+
+        /* Таймери варти */
+        .watch-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+            gap: 20px;
+            width: 100%;
+        }
+
+        .watch-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 4px;
+            padding: 25px 20px;
+            text-align: center;
+            backdrop-filter: blur(6px);
+            box-shadow: var(--shadow);
+            position: relative;
+            transition: all 0.4s ease;
+        }
+
+        .watch-card.active {
+            border-color: var(--text-accent);
+            box-shadow: 0 0 25px rgba(112, 181, 249, 0.25);
+            background: rgba(18, 28, 44, 0.9);
+        }
+
+        .watch-card.active::before {
+            content: '● АКТИВНА ВАРТА';
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--text-accent);
+            color: #05080e;
+            font-family: 'Cinzel', serif;
+            font-size: 0.65rem;
+            font-weight: 800;
+            padding: 2px 10px;
+            letter-spacing: 1px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px var(--text-accent);
+        }
+
+        .card-header {
+            font-family: 'Cinzel', serif;
+            font-size: 1.3rem;
+            font-weight: 800;
+            letter-spacing: 2px;
+            margin-bottom: 5px;
+            color: #ffffff;
+        }
+
+        .card-schedule {
+            font-size: 0.95rem;
+            color: #8fa3b8;
+            margin-bottom: 20px;
+        }
+
+        .timer-display {
+            font-family: 'Cinzel', serif;
+            font-size: clamp(2rem, 4vw, 2.8rem);
+            font-weight: 800;
+            letter-spacing: 3px;
+            color: var(--text-primary);
+            background: rgba(0, 0, 0, 0.4);
+            padding: 12px 10px;
+            border-radius: 3px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            text-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
+        }
+
+        .timer-label {
+            margin-top: 10px;
+            font-size: 0.85rem;
+            color: #7a8e9e;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Присяга на Стіні */
+        .oath-section {
+            width: 100%;
+            background: rgba(8, 12, 18, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 30px 25px;
+            position: relative;
+            box-shadow: var(--shadow);
+            margin-top: 10px;
+        }
+
+        .oath-section::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; height: 2px;
+            background: linear-gradient(90deg, transparent, var(--text-accent), transparent);
+        }
+
+        .oath-title {
+            font-family: 'Cinzel', serif;
+            text-align: center;
+            font-size: 1.2rem;
+            letter-spacing: 3px;
+            color: var(--text-accent);
+            margin-bottom: 20px;
+            text-transform: uppercase;
+        }
+
+        .oath-text {
+            font-size: clamp(1.05rem, 2vw, 1.25rem);
+            line-height: 1.8;
+            text-align: center;
+            color: #c2d3e4;
+            max-width: 800px;
+            margin: 0 auto;
+            font-style: italic;
+        }
+
+        .oath-text span {
+            color: #ffffff;
+            font-weight: 700;
+            font-style: normal;
+        }
+
+        /* Подвал */
+        footer {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+            font-size: 0.85rem;
+            color: #5d7083;
+            margin-top: 25px;
+            letter-spacing: 1px;
+            font-family: 'Cinzel', serif;
+        }
+
+        /* Адаптивність */
+        @media (max-width: 600px) {
+            .watch-grid {
+                grid-template-columns: 1fr;
+            }
+            .container {
+                gap: 18px;
+            }
+            .oath-section {
+                padding: 20px 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Ефект снігопаду -->
+    <canvas id="snowCanvas"></canvas>
+
+    <div class="container">
+        <!-- Шапка -->
+        <header>
+            <h1>Варта на Стіні</h1>
+            <p class="subtitle">"Ніч збирається, і починається моя варта..."</p>
+        </header>
+
+        <!-- Кнопки керування -->
+        <div class="controls">
+            <button class="btn" id="soundBtn" onclick="toggleHornSound()">📯 Засурмити в Ріг</button>
+            <button class="btn" id="themeBtn" onclick="toggleThemeManually()">🌙 Нічна тема</button>
+        </div>
+
+        <!-- Поточний статус -->
+        <div class="status-banner">
+            <div class="status-title">ПОТОЧНИЙ СТАН НА СТІНІ</div>
+            <div class="current-watch-name" id="currentWatchText">ВИЗНАЧЕННЯ ВАРТИ...</div>
+        </div>
+
+        <!-- Відліки варт -->
+        <div class="watch-grid">
+            <!-- Денна варта -->
+            <div class="watch-card" id="dayCard">
+                <div class="card-header">ДЕННА ВАРТА</div>
+                <div class="card-schedule">Зміна: 08:00 — 20:00</div>
+                <div class="timer-display" id="dayTimer">00:00:00</div>
+                <div class="timer-label" id="dayLabel">До кінця варти</div>
+            </div>
+
+            <!-- Нічна варта -->
+            <div class="watch-card" id="nightCard">
+                <div class="card-header">НІЧНА ВАРТА</div>
+                <div class="card-schedule">Зміна: 20:00 — 08:00</div>
+                <div class="timer-display" id="nightTimer">00:00:00</div>
+                <div class="timer-label" id="nightLabel">До початку варти</div>
+            </div>
+        </div>
+
+        <!-- Клятви на Стіні -->
+        <div class="oath-section">
+            <div class="oath-title">Присяга Нічної Варти</div>
+            <p class="oath-text">
+                "Слухайте моє слово і будьте свідками моєї присяги. Ніч збирається, і починається моя варта. 
+                Вона не закінчиться до моєї смерті. Я не візьму собі ні дружини, ні земель, не буду батьком дітям. 
+                Я не носитиму корон і не здобуду слави. Я житиму й помру на своєму посту.<br><br>
+                <span>Я — меч у темряві. Я — вартовий на Стіні. Я — щит, що охороняє царства людей.</span> 
+                Я віддаю своє життя й честь Нічній Варті в цю ніч і в усі наступні!"
+            </p>
+        </div>
+    </div>
+
+    <footer>
+        NIGHT'S WATCH COMMAND — THE GREAT WALL OF WESTEROS
+    </footer>
+
+    <script>
+        /* ==================== 1. АНІМАЦІЯ СНІГОПАДУ ==================== */
+        const canvas = document.getElementById('snowCanvas');
+        const ctx = canvas.getContext('2d');
+        let width = canvas.width = window.innerWidth;
+        let height = canvas.height = window.innerHeight;
+
+        window.addEventListener('resize', () => {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        });
+
+        const flakes = Array.from({ length: 120 }, () => ({
+            x: Math.random() * width,
+            y: Math.random() * height,
+            r: Math.random() * 3 + 1,
+            d: Math.random() * 1 + 0.5,
+            opacity: Math.random() * 0.7 + 0.3,
+            wind: Math.random() * 1 - 0.5
+        }));
+
+        function drawSnow() {
+            ctx.clearRect(0, 0, width, height);
+            ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
+            ctx.beginPath();
+            
+            for (let f of flakes) {
+                ctx.moveTo(f.x, f.y);
+                ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2, true);
+                
+                f.y += f.d * 1.2;
+                f.x += f.wind;
+
+                if (f.y > height) {
+                    f.y = -10;
+                    f.x = Math.random() * width;
+                }
+                if (f.x > width) f.x = 0;
+                if (f.x < 0) f.x = width;
+            }
+            ctx.fill();
+            requestAnimationFrame(drawSnow);
+        }
+        drawSnow();
+
+        /* ==================== 2. ЛОГІКА ТАЙМЕРІВ ТА ВАРТИ ==================== */
+        let manualTheme = null;
+
+        function formatTime(ms) {
+            if (ms < 0) ms = 0;
+            const totalSec = Math.floor(ms / 1000);
+            const hours = String(Math.floor(totalSec / 3600)).padStart(2, '0');
+            const minutes = String(Math.floor((totalSec % 3600) / 60)).padStart(2, '0');
+            const seconds = String(totalSec % 60).padStart(2, '0');
+            return `${hours}:${minutes}:${seconds}`;
+        }
+
+        function updateWatchTimers() {
+            const now = new Date();
+            const currentHour = now.getHours();
+
+            // Розрахунок ключових точок часу (08:00 та 20:00)
+            const today08 = new Date(now); today08.setHours(8, 0, 0, 0);
+            const today20 = new Date(now); today20.setHours(20, 0, 0, 0);
+
+            const next08 = new Date(today08);
+            if (now >= today08) next08.setDate(next08.getDate() + 1);
+
+            const next20 = new Date(today20);
+            if (now >= today20) next20.setDate(next20.getDate() + 1);
+
+            const isDayWatch = currentHour >= 8 && currentHour < 20;
+
+            // Елементи UI
+            const dayTimerEl = document.getElementById('dayTimer');
+            const nightTimerEl = document.getElementById('nightTimer');
+            const dayLabelEl = document.getElementById('dayLabel');
+            const nightLabelEl = document.getElementById('nightLabel');
+            const currentWatchText = document.getElementById('currentWatchText');
+            const dayCard = document.getElementById('dayCard');
+            const nightCard = document.getElementById('nightCard');
+
+            if (isDayWatch) {
+                // Триває Денна Варта (8:00 -> 20:00)
+                const dayRemaining = today20 - now;
+                const nightCountdown = today20 - now;
+
+                dayTimerEl.innerText = formatTime(dayRemaining);
+                dayLabelEl.innerText = "До передачі нічній варті";
+
+                nightTimerEl.innerText = formatTime(nightCountdown);
+                nightLabelEl.innerText = "Початок нічної варти через";
+
+                currentWatchText.innerText = "☀️ ТРИВАЄ ДЕННА ВАРТА";
+                dayCard.classList.add('active');
+                nightCard.classList.remove('active');
+
+                if (manualTheme === null) setTheme('day');
+            } else {
+                // Триває Нічна Варта (20:00 -> 8:00)
+                let nightRemaining;
+                if (currentHour >= 20) {
+                    nightRemaining = next08 - now;
+                } else {
+                    nightRemaining = today08 - now;
+                }
+
+                const dayCountdown = nightRemaining;
+
+                nightTimerEl.innerText = formatTime(nightRemaining);
+                nightLabelEl.innerText = "До передачі денній варті";
+
+                dayTimerEl.innerText = formatTime(dayCountdown);
+                dayLabelEl.innerText = "Початок денної варти через";
+
+                currentWatchText.innerText = "🌙 ТРИВАЄ НІЧНА ВАРТА";
+                nightCard.classList.add('active');
+                dayCard.classList.remove('active');
+
+                if (manualTheme === null) setTheme('night');
+            }
+        }
+
+        function setTheme(theme) {
+            document.documentElement.setAttribute('data-theme', theme);
+            const themeBtn = document.getElementById('themeBtn');
+            if (theme === 'day') {
+                themeBtn.innerText = '☀️ Денна тема';
+            } else {
+                themeBtn.innerText = '🌙 Нічна тема';
+            }
+        }
+
+        function toggleThemeManually() {
+            const current = document.documentElement.getAttribute('data-theme');
+            const nextTheme = current === 'night' ? 'day' : 'night';
+            manualTheme = nextTheme;
+            setTheme(nextTheme);
+        }
+
+        setInterval(updateWatchTimers, 1000);
+        updateWatchTimers();
+
+        /* ==================== 3. СИНТЕЗАТОР ЗВУКУ РОГУ ВАРТИ (Web Audio API) ==================== */
+        let audioCtx = null;
+
+        function toggleHornSound() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+
+            // Створення звуку сигнального рогу Нічної Варти
+            const now = audioCtx.currentTime;
+            
+            // Основними є 2 осцилятори з низькими частотами
+            const osc1 = audioCtx.createOscillator();
+            const osc2 = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            const filter = audioCtx.createBiquadFilter();
+
+            osc1.type = 'sawtooth';
+            osc2.type = 'square';
+
+            // Частота рогу (низька, гучна до мінору)
+            osc1.frequency.setValueAtTime(110, now); // A2
+            osc1.frequency.exponentialRampToValueAtTime(115, now + 1.5);
+            osc1.frequency.exponentialRampToValueAtTime(108, now + 3.0);
+
+            osc2.frequency.setValueAtTime(165, now); // E3 (квінта)
+            osc2.frequency.exponentialRampToValueAtTime(172, now + 1.5);
+            osc2.frequency.exponentialRampToValueAtTime(162, now + 3.0);
+
+            // Фільтр для додання об'єму монументального луни
+            filter.type = 'lowpass';
+            filter.frequency.setValueAtTime(300, now);
+            filter.frequency.linearRampToValueAtTime(1200, now + 1.0);
+            filter.frequency.linearRampToValueAtTime(200, now + 3.2);
+
+            // Гучність та згасання
+            gainNode.gain.setValueAtTime(0.01, now);
+            gainNode.gain.linearRampToValueAtTime(0.4, now + 0.6);
+            gainNode.gain.exponentialRampToValueAtTime(0.001, now + 3.3);
+
+            osc1.connect(filter);
+            osc2.connect(filter);
+            filter.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+
+            osc1.start(now);
+            osc2.start(now);
+            osc1.stop(now + 3.4);
+            osc2.stop(now + 3.4);
+
+            // Візуальний відгук на кнопці
+            const btn = document.getElementById('soundBtn');
+            btn.style.borderColor = '#00d2ff';
+            btn.style.color = '#00d2ff';
+            setTimeout(() => {
+                btn.style.borderColor = '';
+                btn.style.color = '';
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
